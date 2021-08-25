@@ -2,7 +2,7 @@
 
 
 #include "Actors/Items/Base/BaseItem.h"
-
+#include "Components/StaticMeshComponent.h"
 // Sets default values
 ABaseItem::ABaseItem()
 {
@@ -12,6 +12,11 @@ ABaseItem::ABaseItem()
 	bReplicates = true;
 	NetUpdateFrequency = 10.f;
 	NetCullDistanceSquared = 5000.f;
+
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StatiMesh"));
+	StaticMesh->SetupAttachment(RootComponent);
 }
 
 void ABaseItem::BeginPlay()
