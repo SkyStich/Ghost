@@ -19,6 +19,8 @@ public:
 
 	FORCEINLINE UStaticMeshComponent* GetItemMesh() const { return StaticMesh; }
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	
 	virtual void BeginPlay() override;

@@ -2,7 +2,9 @@
 
 
 #include "Actors/Items/Base/BaseItem.h"
+#include "Net/UnrealNetwork.h"
 #include "Components/StaticMeshComponent.h"
+
 // Sets default values
 ABaseItem::ABaseItem()
 {
@@ -11,11 +13,12 @@ ABaseItem::ABaseItem()
 
 	bReplicates = true;
 	NetUpdateFrequency = 10.f;
-	NetCullDistanceSquared = 5000.f;
+	NetCullDistanceSquared = 3500.f;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StatiMesh"));
+	StaticMesh->SetSimulatePhysics(true);
 	StaticMesh->SetupAttachment(RootComponent);
 }
 
@@ -24,4 +27,10 @@ void ABaseItem::BeginPlay()
 	Super::BeginPlay();
 	
 }
+
+void ABaseItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
 
