@@ -4,14 +4,18 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/Player/StoragePlayerComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "Actors/Items/Base/BaseItem.h"
+#include "DrawDebugHelpers.h"
 
 AGhostCharacter::AGhostCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	bReplicates = true;
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -32,6 +36,8 @@ AGhostCharacter::AGhostCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(GetMesh(), "head"); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
+
+	StoragePlayerComponent = CreateDefaultSubobject<UStoragePlayerComponent>(TEXT("StorageComponent"));
 }
 
 void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -40,6 +46,8 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	
+	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AGhostCharacter::PressedInteraction);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AGhostCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AGhostCharacter::MoveRight);
@@ -48,6 +56,13 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAxis("TurnRate", this, &AGhostCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGhostCharacter::LookUpAtRate);
+}
+
+void AGhostCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	StoragePlayerComponent->OnNewCurrentItem.AddDynamic(this, &AGhostCharacter::OnNewCurrentWeaponEvent);
 }
 
 void AGhostCharacter::TurnAtRate(float Rate)
@@ -84,3 +99,51 @@ void AGhostCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+void AGhostCharacter::OnNewCurrentWeaponEvent(ABaseItem* NewItem)
+{
+	if(NewItem)
+	{
+		NewItem->SetActorHiddenInGame(false);
+		NewItem->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "SKT_RightArmItem");
+	}
+}
+
+AActor* AGhostCharacter::DropLineTraceFromInteraction()
+{
+	FVector const TraceStart = FollowCamera->GetComponentLocation();
+	FVector const TraceEnd = Controller->GetControlRotation().Vector() * 550.f + TraceStart;
+
+	FHitResult OutHit;
+
+	GetWorld()->LineTraceSingleByChannel(OutHit, TraceStart, TraceEnd, ECC_Visibility);
+
+	return OutHit.GetActor();
+}
+
+void AGhostCharacter::PressedInteraction()
+{
+	FVector const Start = FollowCamera->GetComponentLocation();
+	FVector const End = Controller->GetControlRotation().Vector() * 550.f + Start;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 4.f, 5);
+	
+	auto const ActorForInteraction = DropLineTraceFromInteraction();
+	if(!ActorForInteraction) return;
+	if(!ActorForInteraction->GetClass()->ImplementsInterface(UPlayerItemInteraction::StaticClass())) return;
+	Server_InteractionWithItem();
+}
+
+void AGhostCharacter::Server_InteractionWithItem_Implementation()
+{
+	auto const ActorForInteraction = DropLineTraceFromInteraction();
+	
+	FVector const Start = FollowCamera->GetComponentLocation();
+	FVector const End = Controller->GetControlRotation().Vector() * 550.f + Start;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 4.f, 5);
+
+	if(!ActorForInteraction) return;
+	if(!ActorForInteraction->GetClass()->ImplementsInterface(UPlayerItemInteraction::StaticClass())) return;
+
+	IPlayerItemInteraction::Execute_PlayerInteractionWithItem(ActorForInteraction, this);
+}
+

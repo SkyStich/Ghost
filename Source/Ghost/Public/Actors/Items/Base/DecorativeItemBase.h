@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Items/Base/BaseItem.h"
+#include "Interfaces/Actors/GhostInteractionWithItem.h"
 #include "DecorativeItemBase.generated.h"
 
 /**
  * Base item for only interaction of the player and the ghost
  */
 UCLASS(Abstract)
-class GHOST_API ADecorativeItemBase : public ABaseItem
+class GHOST_API ADecorativeItemBase : public ABaseItem, public IGhostInteractionWithItem
 {
 	GENERATED_BODY()
 

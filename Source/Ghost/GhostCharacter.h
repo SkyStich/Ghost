@@ -6,15 +6,35 @@
 #include "GameFramework/Character.h"
 #include "GhostCharacter.generated.h"
 
+class UStoragePlayerComponent;
+class UCameraComponent;
+class ABaseItem;
+
 UCLASS(config=Game)
 class AGhostCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	UFUNCTION()
+	void OnNewCurrentWeaponEvent(ABaseItem* NewItem);
+
+	UFUNCTION()
+	void PressedInteraction();
+	
+	UFUNCTION(Server, Unreliable)
+	void Server_InteractionWithItem();
+
+	AActor* DropLineTraceFromInteraction();
+
+protected:
+
+	virtual void BeginPlay() override;
+
 public:
 	AGhostCharacter();
 
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UStoragePlayerComponent* GetStoragePlayerComponent() const { return StoragePlayerComponent; }
 
 protected:
 
@@ -38,6 +58,9 @@ protected:
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StorageComponent")
+	UStoragePlayerComponent* StoragePlayerComponent;
 };
 
