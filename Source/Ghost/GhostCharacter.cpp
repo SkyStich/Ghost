@@ -104,7 +104,6 @@ void AGhostCharacter::OnNewCurrentWeaponEvent(ABaseItem* NewItem)
 {
 	if(NewItem)
 	{
-		NewItem->SetActorHiddenInGame(false);
 		NewItem->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "SKT_RightArmItem");
 	}
 }

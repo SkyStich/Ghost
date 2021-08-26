@@ -13,10 +13,9 @@ ABaseItem::ABaseItem()
 	PrimaryActorTick.bCanEverTick = false;
 
 	bReplicates = true;
+	IsInStorage = false;
 	NetUpdateFrequency = 10.f;
 	NetCullDistanceSquared = 3500.f;
-
-	bIsStorage = false;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	
@@ -35,24 +34,34 @@ void ABaseItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ABaseItem, bIsStorage);
+	DOREPLIFETIME(ABaseItem, IsInStorage);
 }
 
 void ABaseItem::PlayerInteractionWithItem_Implementation(AGhostCharacter* Player)
 {
 	if(Player->GetStoragePlayerComponent()->AddItemToStorage(this))
 	{
-		bIsStorage = true;
+		IsInStorage = true;
 		OnRep_IsStorage();
+
+		if(Player->GetStoragePlayerComponent()->GetPlayerCurrentItem() != this)
+			SetActorLocation(FVector(99999.f));
 	}
 }
 
 void ABaseItem::OnRep_IsStorage()
 {
-	if(!bIsStorage) return;
-	
-	StaticMesh->SetSimulatePhysics(false);
-	StaticMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-	SetActorHiddenInGame(true);
-	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if(IsInStorage)
+	{
+		StaticMesh->SetSimulatePhysics(false);
+		StaticMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	else
+	{
+		StaticMesh->SetSimulatePhysics(true);
+		SetActorHiddenInGame(false);
+		//StaticMesh->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+		StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
 }

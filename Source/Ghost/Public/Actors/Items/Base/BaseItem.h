@@ -37,5 +37,5 @@ private:
 	UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(ReplicatedUsing = OnRep_IsStorage)
-	bool bIsStorage;
+	bool IsInStorage;
 };
