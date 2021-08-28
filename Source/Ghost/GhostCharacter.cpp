@@ -63,6 +63,7 @@ void AGhostCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	StoragePlayerComponent->OnNewCurrentItem.AddDynamic(this, &AGhostCharacter::OnNewCurrentWeaponEvent);
+	StoragePlayerComponent->OnRemoveItem.AddDynamic(this, &AGhostCharacter::OnItemRemoveEvent);
 }
 
 void AGhostCharacter::TurnAtRate(float Rate)
@@ -104,8 +105,18 @@ void AGhostCharacter::OnNewCurrentWeaponEvent(ABaseItem* NewItem)
 {
 	if(NewItem)
 	{
-		NewItem->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "SKT_RightArmItem");
+		NewItem->AddToStorage();
+
+		if(!NewItem->GetAttachParentActor())
+		NewItem->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "SKT_RightArmItem");
 	}
+}
+
+void AGhostCharacter::OnItemRemoveEvent(ABaseItem* NewItem)
+{
+	/** todo: replace the impulse with a more controlled logic of the throw */
+	if(Controller)
+	NewItem->GetStaticMeshComponent()->AddImpulse(Controller->GetControlRotation().Vector() * 400.f);
 }
 
 AActor* AGhostCharacter::DropLineTraceFromInteraction()

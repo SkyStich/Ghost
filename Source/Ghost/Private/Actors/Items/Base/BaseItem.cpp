@@ -12,16 +12,13 @@ ABaseItem::ABaseItem()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	bStaticMeshReplicateMovement = true;
 	bReplicates = true;
 	IsInStorage = false;
 	NetUpdateFrequency = 10.f;
 	NetCullDistanceSquared = 3500.f;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StatiMesh"));
-	StaticMesh->SetSimulatePhysics(true);
-	StaticMesh->SetupAttachment(RootComponent);
+	SetReplicatingMovement(true);
 }
 
 void ABaseItem::BeginPlay()
@@ -42,6 +39,7 @@ void ABaseItem::PlayerInteractionWithItem_Implementation(AGhostCharacter* Player
 	if(Player->GetStoragePlayerComponent()->AddItemToStorage(this))
 	{
 		IsInStorage = true;
+		SetOwner(Player);
 		OnRep_IsStorage();
 
 		if(Player->GetStoragePlayerComponent()->GetPlayerCurrentItem() != this)
@@ -53,15 +51,25 @@ void ABaseItem::OnRep_IsStorage()
 {
 	if(IsInStorage)
 	{
-		StaticMesh->SetSimulatePhysics(false);
-		StaticMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AddToStorage();
 	}
 	else
 	{
-		StaticMesh->SetSimulatePhysics(true);
-		SetActorHiddenInGame(false);
-		//StaticMesh->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-		StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetStaticMeshComponent()->SetSimulatePhysics(true);
 	}
+}
+
+void ABaseItem::AddToStorage()
+{
+	GetStaticMeshComponent()->SetSimulatePhysics(false);
+	GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ABaseItem::RemoveFromStorage()
+{
+	IsInStorage = false;
+	SetOwner(this);
+	OnRep_IsStorage();
 }

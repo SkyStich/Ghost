@@ -52,7 +52,18 @@ void UStoragePlayerComponent::OnRep_CurrentItem() const
 	OnNewCurrentItem.Broadcast(CurrentItem);
 }
 
-bool UStoragePlayerComponent::RemoveItemFromStorage(ABaseItem* const ItemToRemove)
+bool UStoragePlayerComponent::RemoveItemFromStorage(ABaseItem* Item)
 {
+	Items.Remove(Item);
+	CurrentItem = nullptr;
+	return true;
+}
+
+bool UStoragePlayerComponent::DropItemFromStorage(ABaseItem* const ItemToRemove)
+{
+	if(!RemoveItemFromStorage(ItemToRemove)) return false;
+	
+	ItemToRemove->RemoveFromStorage();
+	OnRemoveItem.Broadcast(ItemToRemove);
 	return false;
 }

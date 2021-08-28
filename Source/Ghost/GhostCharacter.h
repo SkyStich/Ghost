@@ -18,6 +18,10 @@ class AGhostCharacter : public ACharacter
 	UFUNCTION()
 	void OnNewCurrentWeaponEvent(ABaseItem* NewItem);
 
+	/**called when an object is removed from the owner's inventory. On server*/
+	UFUNCTION()
+	void OnItemRemoveEvent(ABaseItem* NewItem);
+
 	UFUNCTION()
 	void PressedInteraction();
 	
@@ -56,7 +60,6 @@ public:
     
 protected:
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* FollowCamera;
 
