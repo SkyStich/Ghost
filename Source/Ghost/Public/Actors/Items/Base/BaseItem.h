@@ -36,9 +36,16 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	/** interact directly with the current items (turn on the flashlight) */
+	virtual bool UseItemDirectly() { return true; }
+
+	/** Interaction with current items at the expense of another */
+	virtual bool UseItemAtExpenseOfAnother() { return true; }
+	
 public:
 
 	FItemRemoveFromStorageComplete OnItemRemoveFromStorageComplete;
+	
 private:
 
 	/** true if actor in storage */
