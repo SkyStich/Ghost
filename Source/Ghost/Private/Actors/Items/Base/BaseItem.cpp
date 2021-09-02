@@ -6,10 +6,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/Player/StoragePlayerComponent.h"
 
-// Sets default values
 ABaseItem::ABaseItem()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	bStaticMeshReplicateMovement = true;
@@ -24,7 +22,6 @@ ABaseItem::ABaseItem()
 void ABaseItem::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void ABaseItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
