@@ -34,7 +34,7 @@ AGhostCharacter::AGhostCharacter()
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(GetMesh(), "head"); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(GetMesh(), "Head"); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
 
 	StoragePlayerComponent = CreateDefaultSubobject<UStoragePlayerComponent>(TEXT("StorageComponent"));
