@@ -13,5 +13,24 @@ UCLASS(Abstract)
 class GHOST_API APlayerItemBase : public ABaseItem
 {
 	GENERATED_BODY()
+
+protected:
 	
+	UFUNCTION()
+	virtual void OnRep_ItemUsed() {}
+
+public:
+
+	APlayerItemBase();
+
+	virtual bool UseItemDirectly() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+protected:
+
+	UPROPERTY(ReplicatedUsing = OnRep_ItemUsed)
+	bool bItemUsed;
+	
+	UPROPERTY(Replicated)
+	bool bCanItemUse;
 };

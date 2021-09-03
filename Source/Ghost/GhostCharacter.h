@@ -28,6 +28,9 @@ class AGhostCharacter : public ACharacter
 	UFUNCTION(Server, Unreliable)
 	void Server_InteractionWithItem();
 
+	UFUNCTION()
+	void UseItemDirectlyPressed();
+
 	AActor* DropLineTraceFromInteraction();
 
 protected:

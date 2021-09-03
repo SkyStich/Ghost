@@ -49,6 +49,8 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AGhostCharacter::PressedInteraction);
 
+	PlayerInputComponent->BindAction("UseItemDirectly", IE_Released, this, &AGhostCharacter::UseItemDirectlyPressed);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AGhostCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AGhostCharacter::MoveRight);
 
@@ -116,7 +118,7 @@ void AGhostCharacter::OnItemRemoveEvent(ABaseItem* NewItem)
 {
 	/** todo: replace the impulse with a more controlled logic of the throw */
 	if(Controller)
-	NewItem->GetStaticMeshComponent()->AddImpulse(Controller->GetControlRotation().Vector() * 400.f);
+		NewItem->GetStaticMeshComponent()->AddImpulse(Controller->GetControlRotation().Vector() * 400.f);
 }
 
 AActor* AGhostCharacter::DropLineTraceFromInteraction()
@@ -157,3 +159,11 @@ void AGhostCharacter::Server_InteractionWithItem_Implementation()
 	IPlayerItemInteraction::Execute_PlayerInteractionWithItem(ActorForInteraction, this);
 }
 
+void AGhostCharacter::UseItemDirectlyPressed()
+{
+	auto const TempItem = StoragePlayerComponent->GetPlayerCurrentItem();
+	if(TempItem)
+	{
+		TempItem->UseItemDirectlyPressed();
+	}
+}

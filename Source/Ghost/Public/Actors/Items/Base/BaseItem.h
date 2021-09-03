@@ -32,6 +32,9 @@ public:
 	/** called from the server and connected clients when adding an object to the player's inventory */
 	void AddToStorage();
 
+	/** Call on pressed buttom */
+	virtual void UseItemDirectlyPressed();
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -41,6 +44,9 @@ protected:
 
 	/** Interaction with current items at the expense of another */
 	virtual bool UseItemAtExpenseOfAnother() { return true; }
+	
+	UFUNCTION(Server, Unreliable)
+    virtual void Server_UseItemDirectly();
 	
 public:
 

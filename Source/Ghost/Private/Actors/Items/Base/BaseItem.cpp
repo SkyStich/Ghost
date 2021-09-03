@@ -15,6 +15,7 @@ ABaseItem::ABaseItem()
 	IsInStorage = false;
 	NetUpdateFrequency = 10.f;
 	NetCullDistanceSquared = 3500.f;
+	GetStaticMeshComponent()->SetSimulatePhysics(true);
 
 	SetReplicatingMovement(true);
 }
@@ -69,4 +70,15 @@ void ABaseItem::RemoveFromStorage()
 	IsInStorage = false;
 	SetOwner(this);
 	OnRep_IsStorage();
+}
+
+void ABaseItem::UseItemDirectlyPressed()
+{
+	UseItemDirectly();
+	Server_UseItemDirectly();
+}
+
+void ABaseItem::Server_UseItemDirectly_Implementation()
+{
+	UseItemDirectly();
 }
