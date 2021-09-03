@@ -13,9 +13,6 @@ USTRUCT(BlueprintType)
 struct FItemData
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName ItemId;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText ItemName;
