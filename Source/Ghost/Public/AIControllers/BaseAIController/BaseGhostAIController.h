@@ -43,7 +43,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAISenseConfig_Sight* SightConfig;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UBlackboardComponent* BlackboardComponent;
 
 private:
