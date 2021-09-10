@@ -9,4 +9,5 @@ namespace bb_keys
 {
 	/** the point to which the ghost is streaming */
 	TCHAR const * const Target_Location = TEXT("TargetLocation");
+	TCHAR const * const Target_Actor = TEXT("TargetActor");
 }
