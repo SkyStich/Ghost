@@ -6,6 +6,10 @@
 #include "GameFramework/Pawn.h"
 #include "BaseGhostPawn.generated.h"
 
+class USkeletalMeshComponent;
+class UCapsuleComponent;
+
+
 UCLASS(Abstract)
 class GHOST_API ABaseGhostPawn : public APawn
 {
@@ -18,4 +22,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+protected:
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	USkeletalMeshComponent* SkeletalMesh;
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UCapsuleComponent* CapsuleComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPawnMovementComponent* PawnMovementComponent;
 };
