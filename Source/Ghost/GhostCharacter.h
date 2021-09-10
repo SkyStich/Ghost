@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+
 #include "GhostCharacter.generated.h"
 
 class UStoragePlayerComponent;
@@ -68,5 +70,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StorageComponent")
 	UStoragePlayerComponent* StoragePlayerComponent;
+	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "StorageComponent")
+	UAIPerceptionStimuliSourceComponent* StimuliSourceComponent;
 };
 
