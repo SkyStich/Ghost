@@ -3,15 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "BaseGhostPawn.generated.h"
 
-class USkeletalMeshComponent;
-class UCapsuleComponent;
-
-
 UCLASS(Abstract)
-class GHOST_API ABaseGhostPawn : public APawn
+class GHOST_API ABaseGhostPawn : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -22,15 +18,4 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-protected:
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	USkeletalMeshComponent* SkeletalMesh;
-	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	UCapsuleComponent* CapsuleComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UPawnMovementComponent* PawnMovementComponent;
 };
