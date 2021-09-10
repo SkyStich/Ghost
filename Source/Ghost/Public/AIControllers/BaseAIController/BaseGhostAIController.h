@@ -19,6 +19,7 @@ class GHOST_API ABaseGhostAIController : public AAIController
 private:
 
 	void SetupPerceptionSystem();
+	void UpdateTargetActor(AActor* SeeActor, UObject* CurrentTarget);
 
 protected:
 
@@ -38,16 +39,13 @@ protected:
 	UBehaviorTree* GhostFormTree;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UBehaviorTreeComponent* BehaviorTreeComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAISenseConfig_Sight* SightConfig;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UBlackboardComponent* BlackboardComponent;
 
 private:
 
 	UPROPERTY(EditAnywhere)
 	float SightRadius;
+
+	UPROPERTY(EditAnywhere)
+	UBlackboardData* BlackboardData;
 };
