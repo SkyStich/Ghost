@@ -230,7 +230,7 @@ void AGhostCharacter::Server_DoorInteractionTrace_Implementation()
 	FHitResult OutHit;
 	bool const bResult = DropInteractionDoorTrace(OutHit);
 
-	if(bResult && OutHit.GetActor()->ActorHasTag("Door"))
+	if(bResult && OutHit.GetActor() && OutHit.GetActor()->ActorHasTag("Door"))
 	{
 		InteractionDoor = OutHit.GetComponent();
 	}
