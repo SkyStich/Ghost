@@ -20,6 +20,9 @@ class AGhostCharacter : public ACharacter
 	UFUNCTION()
 	void OnNewCurrentWeaponEvent(ABaseItem* NewItem);
 
+	UFUNCTION()
+	void OnRep_PlayerTurn();
+
 	/**called when an object is removed from the owner's inventory. On server*/
 	UFUNCTION()
 	void OnItemRemoveEvent(ABaseItem* NewItem);
@@ -52,10 +55,6 @@ class AGhostCharacter : public ACharacter
 	void UpdateDoorRotate(float Rate);
 	bool DropInteractionDoorTrace(FHitResult& OutHit);
 
-protected:
-
-	virtual void BeginPlay() override;
-	virtual void AddControllerYawInput(float Val) override;
 
 public:
 	AGhostCharacter();
@@ -70,8 +69,12 @@ protected:
 
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
-
+	
+	
+	virtual void BeginPlay() override;
+	virtual void AddControllerYawInput(float Val) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:
 	
@@ -97,7 +100,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	float DoorTurnRate;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	UPrimitiveComponent* InteractionDoor;
+
+	UPROPERTY(ReplicatedUsing=OnRep_PlayerTurn)
+	float PlayerTurn;
 };
 

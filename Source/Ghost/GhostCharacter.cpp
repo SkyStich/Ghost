@@ -9,7 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "Actors/Items/Base/BaseItem.h"
 #include "DrawDebugHelpers.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 AGhostCharacter::AGhostCharacter()
@@ -68,13 +68,20 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGhostCharacter::LookUpAtRate);
 }
 
+void AGhostCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AGhostCharacter, PlayerTurn, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AGhostCharacter, InteractionDoor, COND_SkipOwner);
+}
+
 void AGhostCharacter::AddControllerYawInput(float Val)
 {
 	Super::AddControllerYawInput(Val);
 
 	UpdateDoorRotate(Val);
 }
-
 
 void AGhostCharacter::BeginPlay()
 {
@@ -201,6 +208,7 @@ void AGhostCharacter::DropInteractionReleased()
 {
 	if(InteractionDoor)
 	{
+		InteractionDoor = nullptr;
 		Server_FinishDoorInteraction();
 	}
 }
@@ -210,7 +218,7 @@ void AGhostCharacter::DoorInteractionPressed()
 	FHitResult OutHit;
 	bool const bResult = DropInteractionDoorTrace(OutHit);
 
-	if(bResult && OutHit.GetActor()->ActorHasTag("Door"))
+	if(bResult && OutHit.GetActor() && OutHit.GetActor()->ActorHasTag("Door"))
 	{
 		InteractionDoor = OutHit.GetComponent();
 		Server_DoorInteractionTrace();
@@ -237,7 +245,10 @@ void AGhostCharacter::UpdateDoorRotate(float Rate)
 {
 	if(InteractionDoor && Rate != 0.f && Controller)
 	{
-		Server_UpdateDoorRotate(Rate * DoorTurnRate);
+		PlayerTurn = Rate * DoorTurnRate * -1;
+		OnRep_PlayerTurn();
+		
+		Server_UpdateDoorRotate(PlayerTurn);
 	}
 }
 
@@ -245,8 +256,17 @@ void AGhostCharacter::Server_UpdateDoorRotate_Implementation(float Rate)
 {
 	if(InteractionDoor)
 	{
-		FQuat const CombineRotation = FQuat(InteractionDoor->GetComponentRotation()) * FQuat(FRotator(0.f, Rate, 0.f));
-		InteractionDoor->SetWorldRotation(FRotator(CombineRotation), true);
+		PlayerTurn = Rate;
+		OnRep_PlayerTurn();
+	}
+}
+
+void AGhostCharacter::OnRep_PlayerTurn()
+{
+	if(InteractionDoor)
+	{
+		FQuat const CombineRotation = FQuat(InteractionDoor->GetComponentRotation()) * FQuat(FRotator(0.f, PlayerTurn, 0.f));
+		InteractionDoor->SetWorldRotation(FRotator(CombineRotation));
 	}
 }
 
