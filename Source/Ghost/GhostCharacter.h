@@ -29,15 +29,33 @@ class AGhostCharacter : public ACharacter
 	
 	UFUNCTION(Server, Unreliable)
 	void Server_InteractionWithItem();
+	
+	UFUNCTION()
+    void UseItemDirectlyPressed();
 
 	UFUNCTION()
-	void UseItemDirectlyPressed();
+    void DoorInteractionPressed();
+
+	UFUNCTION()
+	void DropInteractionReleased();
+
+	UFUNCTION(Server, Unreliable)
+	void Server_UpdateDoorRotate(float Rate);
+
+	UFUNCTION(Server, Unreliable)
+	void Server_DoorInteractionTrace();
+	
+	UFUNCTION(Server, Unreliable)
+	void Server_FinishDoorInteraction();
 
 	AActor* DropLineTraceFromInteraction();
+	void UpdateDoorRotate(float Rate);
+	bool DropInteractionDoorTrace(FHitResult& OutHit);
 
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void AddControllerYawInput(float Val) override;
 
 public:
 	AGhostCharacter();
@@ -73,5 +91,13 @@ protected:
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "StorageComponent")
 	UAIPerceptionStimuliSourceComponent* StimuliSourceComponent;
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	float DoorTurnRate;
+
+	UPROPERTY()
+	UPrimitiveComponent* InteractionDoor;
 };
 

@@ -9,6 +9,8 @@
 #include "GameFramework/Controller.h"
 #include "Actors/Items/Base/BaseItem.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AGhostCharacter::AGhostCharacter()
 {
@@ -20,6 +22,7 @@ AGhostCharacter::AGhostCharacter()
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+	DoorTurnRate = 2.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -49,6 +52,9 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	
+	PlayerInputComponent->BindAction("DoorInteraction", IE_Pressed, this, &AGhostCharacter::DoorInteractionPressed);
+	PlayerInputComponent->BindAction("DoorInteraction", IE_Released, this, &AGhostCharacter::DropInteractionReleased);
+	
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AGhostCharacter::PressedInteraction);
 
 	PlayerInputComponent->BindAction("UseItemDirectly", IE_Released, this, &AGhostCharacter::UseItemDirectlyPressed);
@@ -61,6 +67,14 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGhostCharacter::LookUpAtRate);
 }
+
+void AGhostCharacter::AddControllerYawInput(float Val)
+{
+	Super::AddControllerYawInput(Val);
+
+	UpdateDoorRotate(Val);
+}
+
 
 void AGhostCharacter::BeginPlay()
 {
@@ -167,6 +181,72 @@ void AGhostCharacter::UseItemDirectlyPressed()
 	if(TempItem)
 	{
 		TempItem->UseItemDirectlyPressed();
+	}
+}
+
+bool AGhostCharacter::DropInteractionDoorTrace(FHitResult& OutHit)
+{
+	FVector const TraceStart = FollowCamera->GetComponentLocation();
+	FVector const TraceEnd = Controller->GetControlRotation().Vector() * 400.f + TraceStart;
+	
+	FCollisionObjectQueryParams Params;
+	Params.AddObjectTypesToQuery(ECC_GameTraceChannel2);
+	Params.AddObjectTypesToQuery(ECC_WorldStatic);
+	Params.AddObjectTypesToQuery(ECC_WorldDynamic);
+	
+	return GetWorld()->LineTraceSingleByObjectType(OutHit, TraceStart, TraceEnd, Params);
+}
+
+void AGhostCharacter::DropInteractionReleased()
+{
+	if(InteractionDoor)
+	{
+		Server_FinishDoorInteraction();
+	}
+}
+
+void AGhostCharacter::DoorInteractionPressed()
+{
+	FHitResult OutHit;
+	bool const bResult = DropInteractionDoorTrace(OutHit);
+
+	if(bResult && OutHit.GetActor()->ActorHasTag("Door"))
+	{
+		InteractionDoor = OutHit.GetComponent();
+		Server_DoorInteractionTrace();
+	}
+}
+
+void AGhostCharacter::Server_DoorInteractionTrace_Implementation()
+{
+	FHitResult OutHit;
+	bool const bResult = DropInteractionDoorTrace(OutHit);
+
+	if(bResult && OutHit.GetActor()->ActorHasTag("Door"))
+	{
+		InteractionDoor = OutHit.GetComponent();
+	}
+}
+
+void AGhostCharacter::Server_FinishDoorInteraction_Implementation()
+{
+	InteractionDoor = nullptr;
+}
+
+void AGhostCharacter::UpdateDoorRotate(float Rate)
+{
+	if(InteractionDoor && Rate != 0.f && Controller)
+	{
+		Server_UpdateDoorRotate(Rate * DoorTurnRate);
+	}
+}
+
+void AGhostCharacter::Server_UpdateDoorRotate_Implementation(float Rate)
+{
+	if(InteractionDoor)
+	{
+		FQuat const CombineRotation = FQuat(InteractionDoor->GetComponentRotation()) * FQuat(FRotator(0.f, Rate, 0.f));
+		InteractionDoor->SetWorldRotation(FRotator(CombineRotation), true);
 	}
 }
 
