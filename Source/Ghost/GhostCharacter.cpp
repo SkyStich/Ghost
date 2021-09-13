@@ -18,6 +18,7 @@ AGhostCharacter::AGhostCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	bReplicates = true;
+	NetUpdateFrequency = 30.f;
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
