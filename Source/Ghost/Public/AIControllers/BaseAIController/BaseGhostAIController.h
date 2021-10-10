@@ -25,6 +25,8 @@ protected:
 
 	UFUNCTION()
 	void OnSightUpdate(AActor* SeeActor, FAIStimulus const Stimulus);
+	
+	virtual void BeginPlay() override;
 
 public:
 

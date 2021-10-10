@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/TriggerBox.h"
+#include "Engine/TriggerVolume.h"
 #include "TransitionToHouseTrigger.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GHOST_API ATransitionToHouseTrigger : public ATriggerBox
+class GHOST_API ATransitionToHouseTrigger : public ATriggerVolume
 {
 	GENERATED_BODY()
 

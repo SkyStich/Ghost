@@ -3,14 +3,16 @@
 
 #include "Triggers/TransitionToHouse/TransitionToHouseTrigger.h"
 
+
+#include "Components/BrushComponent.h"
 #include "Components/ShapeComponent.h"
 #include "GameState/Base/SessionGameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 
 ATransitionToHouseTrigger::ATransitionToHouseTrigger()
 {
-	GetCollisionComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
-	GetCollisionComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	GetBrushComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetBrushComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 void ATransitionToHouseTrigger::BeginPlay()
@@ -23,8 +25,8 @@ void ATransitionToHouseTrigger::BeginPlay()
 	}
 	else
 	{
-		GetCollisionComponent()->OnComponentBeginOverlap.AddDynamic(this, &ATransitionToHouseTrigger::OnComponentBeginOverlap);
-		GetCollisionComponent()->OnComponentEndOverlap.AddDynamic(this, &ATransitionToHouseTrigger::OnComponentEndOverlap);
+		GetBrushComponent()->OnComponentBeginOverlap.AddDynamic(this, &ATransitionToHouseTrigger::OnComponentBeginOverlap);
+		GetBrushComponent()->OnComponentEndOverlap.AddDynamic(this, &ATransitionToHouseTrigger::OnComponentEndOverlap);
 	}
 }
 
@@ -34,6 +36,10 @@ void ATransitionToHouseTrigger::OnComponentBeginOverlap(UPrimitiveComponent* Ove
 	if(GS)
 	{
 		GS->SetPlayersInHouse(true);
+		
+#if WITH_EDITOR
+		UKismetSystemLibrary::PrintString(GetWorld(), TEXT("Players move to house"), true, true, FColor::Emerald, 2.f);
+#endif
 	}
 }
 
@@ -42,12 +48,16 @@ void ATransitionToHouseTrigger::OnComponentEndOverlap(UPrimitiveComponent* Overl
 	/** Chack num player in house */
 	TArray<AActor*> OverlappingActors;
 	GetOverlappingActors(OverlappingActors);
-	if(OverlappingActors.Num() <= 0) return;
+	if(OverlappingActors.Num() > 1) return;
 	
 	auto const GS = Cast<ASessionGameStateBase>(UGameplayStatics::GetGameState(GetWorld()));
 	if(GS)
 	{
-		GS->SetPlayersInHouse(true);
+		GS->SetPlayersInHouse(false);
+		
+#if WITH_EDITOR
+		UKismetSystemLibrary::PrintString(GetWorld(), TEXT("Players leave from house"), true, true, FColor::Emerald, 2.f);
+#endif
 	}
 }
 

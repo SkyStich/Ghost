@@ -20,6 +20,16 @@ ABaseGhostAIController::ABaseGhostAIController()
 	SetupPerceptionSystem();
 }
 
+void ABaseGhostAIController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		
+	}
+}
+
 void ABaseGhostAIController::SetupPerceptionSystem()
 {
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent"));

@@ -7,3 +7,4 @@ ASessionGameStateBase::ASessionGameStateBase()
 {
 	bPlayersInHouse = false;
 }
+

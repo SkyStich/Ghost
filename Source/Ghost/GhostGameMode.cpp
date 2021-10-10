@@ -2,6 +2,7 @@
 
 #include "GhostGameMode.h"
 #include "GhostCharacter.h"
+#include "GameState/Base/SessionGameStateBase.h"
 #include "UObject/ConstructorHelpers.h"
 
 AGhostGameMode::AGhostGameMode()
@@ -12,4 +13,5 @@ AGhostGameMode::AGhostGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+	GameStateClass = ASessionGameStateBase::StaticClass();
 }
