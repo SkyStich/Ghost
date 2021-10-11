@@ -11,6 +11,7 @@
 #include "DrawDebugHelpers.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/Player/ModesOfMovementPlayerComponent.h"
 
 AGhostCharacter::AGhostCharacter()
 {
@@ -40,10 +41,14 @@ AGhostCharacter::AGhostCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(GetMesh(), "Head"); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
-	
+
+	/** Create storage component */
 	StoragePlayerComponent = CreateDefaultSubobject<UStoragePlayerComponent>(TEXT("StorageComponent"));
 
+	/** Create stimuli component */
 	StimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComponent"));
+
+	ModesOfMovementComponent = CreateDefaultSubobject<UModesOfMovementPlayerComponent>(TEXT("ModesOfMovementComponent"));
 }
 
 void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -55,6 +60,9 @@ void AGhostCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	
 	PlayerInputComponent->BindAction("DoorInteraction", IE_Pressed, this, &AGhostCharacter::DoorInteractionPressed);
 	PlayerInputComponent->BindAction("DoorInteraction", IE_Released, this, &AGhostCharacter::DropInteractionReleased);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, ModesOfMovementComponent, &UModesOfMovementPlayerComponent::OwnerStartUseStamina);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, ModesOfMovementComponent, &UModesOfMovementPlayerComponent::OwnerStopUseStamina);
 	
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AGhostCharacter::PressedInteraction);
 
@@ -90,6 +98,7 @@ void AGhostCharacter::BeginPlay()
 
 	StoragePlayerComponent->OnNewCurrentItem.AddDynamic(this, &AGhostCharacter::OnNewCurrentWeaponEvent);
 	StoragePlayerComponent->OnRemoveItem.AddDynamic(this, &AGhostCharacter::OnItemRemoveEvent);
+	ModesOfMovementComponent->OnStaminaUseChanged.AddDynamic(this, &AGhostCharacter::OnUseStaminaEvent);
 }
 
 void AGhostCharacter::TurnAtRate(float Rate)
@@ -111,7 +120,21 @@ void AGhostCharacter::MoveForward(float Value)
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
+
+		/** update move forward */
+		if(Value > 0)
+		{
+			bMoveForward = true;
+		}
+		else if(Value < 0 && bMoveForward)
+		{
+			bMoveForward = false;
+			if(ModesOfMovementComponent->GetStaminaUse()) ModesOfMovementComponent->OwnerStopUseStamina();
+		}
+		return;
 	}
+	bMoveForward = false;
+	if(ModesOfMovementComponent->GetStaminaUse()) ModesOfMovementComponent->OwnerStopUseStamina();
 }
 
 void AGhostCharacter::MoveRight(float Value)
@@ -124,6 +147,12 @@ void AGhostCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		AddMovementInput(Direction, Value);
+
+		if(bMoveForward)
+		{
+			bMoveForward = false;
+			if(ModesOfMovementComponent->GetStaminaUse()) ModesOfMovementComponent->OwnerStopUseStamina();
+		}
 	}
 }
 
@@ -271,3 +300,17 @@ void AGhostCharacter::OnRep_PlayerTurn()
 	}
 }
 
+void AGhostCharacter::OnUseStaminaEvent(bool bState)
+{
+	/** continue only if this local controller of server */
+	if(!Controller) return;
+	
+	if(bState)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = ModesOfMovementComponent->GetMovementParam().MaxSprintSpeed;
+	}
+	else
+	{	
+		GetCharacterMovement()->MaxWalkSpeed = ModesOfMovementComponent->GetMovementParam().MaxRunSpeed;
+	}
+}

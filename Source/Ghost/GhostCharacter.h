@@ -11,11 +11,15 @@
 class UStoragePlayerComponent;
 class UCameraComponent;
 class ABaseItem;
+class UModesOfMovementPlayerComponent;
 
 UCLASS(config=Game)
 class AGhostCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	UFUNCTION()
+	void OnUseStaminaEvent(bool bState);
 
 	UFUNCTION()
 	void OnNewCurrentWeaponEvent(ABaseItem* NewItem);
@@ -61,6 +65,7 @@ public:
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE UStoragePlayerComponent* GetStoragePlayerComponent() const { return StoragePlayerComponent; }
+	FORCEINLINE UModesOfMovementPlayerComponent* GetModesOfMovementComponent() const { return ModesOfMovementComponent; }
 
 protected:
 
@@ -95,6 +100,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "StorageComponent")
 	UAIPerceptionStimuliSourceComponent* StimuliSourceComponent;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "ModesOfMovementComponent")
+	UModesOfMovementPlayerComponent* ModesOfMovementComponent;
+
 private:
 
 	UPROPERTY(EditAnywhere)
@@ -105,5 +113,7 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerTurn)
 	float PlayerTurn;
+	
+	bool bMoveForward;
 };
 
