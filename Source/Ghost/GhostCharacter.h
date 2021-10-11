@@ -75,7 +75,6 @@ protected:
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
 	
-	
 	virtual void BeginPlay() override;
 	virtual void AddControllerYawInput(float Val) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -116,4 +115,3 @@ private:
 	
 	bool bMoveForward;
 };
-
