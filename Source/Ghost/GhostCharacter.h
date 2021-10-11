@@ -112,6 +112,7 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerTurn)
 	float PlayerTurn;
-	
+
+	/** true if player move forward (pressed default keyboard W (S,D,A - Release)) */
 	bool bMoveForward;
 };

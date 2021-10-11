@@ -12,6 +12,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/Player/ModesOfMovementPlayerComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AGhostCharacter::AGhostCharacter()
 {
@@ -48,6 +49,7 @@ AGhostCharacter::AGhostCharacter()
 	/** Create stimuli component */
 	StimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComponent"));
 
+	/** Create stamina component */
 	ModesOfMovementComponent = CreateDefaultSubobject<UModesOfMovementPlayerComponent>(TEXT("ModesOfMovementComponent"));
 }
 
@@ -275,9 +277,17 @@ void AGhostCharacter::UpdateDoorRotate(float Rate)
 {
 	if(InteractionDoor && Rate != 0.f && Controller)
 	{
-		PlayerTurn = Rate * DoorTurnRate * -1;
-		OnRep_PlayerTurn();
+		/** checking which side of the door the player is standing on */
+		FVector const Diff = GetCapsuleComponent()->GetComponentLocation() - InteractionDoor->GetComponentLocation();
+		float const Dot = FVector::DotProduct(Diff, InteractionDoor->GetAttachParent()->GetForwardVector());
+
+		/** invert the value if the player is standing on the opposite side of the direction of the object */
+		float const MultiplyTurn = Dot > 40.f ? (-1) : 1;
+
+		/** Set door turn rotation */
+		PlayerTurn = Rate * DoorTurnRate * MultiplyTurn;
 		
+		OnRep_PlayerTurn();
 		Server_UpdateDoorRotate(PlayerTurn);
 	}
 }
@@ -294,9 +304,11 @@ void AGhostCharacter::Server_UpdateDoorRotate_Implementation(float Rate)
 void AGhostCharacter::OnRep_PlayerTurn()
 {
 	if(InteractionDoor)
-	{
-		FQuat const CombineRotation = FQuat(InteractionDoor->GetComponentRotation()) * FQuat(FRotator(0.f, PlayerTurn, 0.f));
-		InteractionDoor->SetWorldRotation(FRotator(CombineRotation));
+	{	
+		FQuat const CombineRotation = FQuat(InteractionDoor->GetRelativeRotation()) * FQuat(FRotator(0.f, PlayerTurn, 0.f));
+		FRotator Rotation(CombineRotation);
+		Rotation.Yaw = FMath::Clamp(Rotation.Yaw, 0.f, 90.f);
+		InteractionDoor->SetRelativeRotation(Rotation);
 	}
 }
 
