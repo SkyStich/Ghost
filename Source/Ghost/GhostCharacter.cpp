@@ -126,7 +126,7 @@ void AGhostCharacter::MoveForward(float Value)
 		{
 			bMoveForward = true;
 		}
-		else if(Value < 0 && bMoveForward)
+		else if(Value < 0)
 		{
 			bMoveForward = false;
 			if(ModesOfMovementComponent->GetStaminaUse()) ModesOfMovementComponent->OwnerStopUseStamina();

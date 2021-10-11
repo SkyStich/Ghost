@@ -78,7 +78,7 @@ void UModesOfMovementPlayerComponent::Server_StartUseStamina_Implementation()
 	{
 		SetStaminaUse(true);
 
-		CurrentStaminaValue -= MovementParam.DecreaseStaminaPerSec * 0.2;
+		CurrentStaminaValue -= MovementParam.DecreaseStaminaPreSec * 0.2;
 
 		GetWorld()->GetTimerManager().ClearTimer(StaminaManipulationHandle);
 		GetWorld()->GetTimerManager().SetTimer(StaminaManipulationHandle,this, &UModesOfMovementPlayerComponent::ReductionStamina, 0.2f, true);
@@ -119,7 +119,7 @@ void UModesOfMovementPlayerComponent::StaminaRegeneration()
 
 void UModesOfMovementPlayerComponent::StaminaEnded()
 {
-	CurrentStaminaValue = 0.f
+	CurrentStaminaValue = 0.f;
 
 	SetStaminaUse(false);
 	GetWorld()->GetTimerManager().ClearTimer(StaminaManipulationHandle);
